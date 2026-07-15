@@ -23,14 +23,19 @@ def parse_name(raw_name):
     raw_name = raw_name.strip()
 
     if ',' not in raw_name:
-        return raw_name, ""
+        return raw_name, "", ""
     
     last, rest = raw_name.split(',', 1)
     last = last.strip()
     rest = rest.strip()
 
-    rest = re.sub(r'\s*-\.\s*$', '', rest).strip() # remove dash
-    rest = re.sub(r'\s+[A-Z]\.\s*$', '', rest).strip() # remove middle initial
+    rest = re.sub(r'\s*-\.\s*$', '', rest).strip() # remove dash and dot
+
+    middle_initial = ""
+    mi_match = re.search(r'\s+([A-Z])\.\s*$', rest)
+    if mi_match:
+        middle_initial = mi_match.group(1)
+        rest = rest[:mi_match.start()].strip()
     rest = re.sub(r'\.\s*$', '', rest).strip() # remove lone dots
 
     # # raw_name = re.sub(r'\s*-\+[A-Z].\s*$', '', raw_name).strip()
@@ -45,7 +50,7 @@ def parse_name(raw_name):
     # rest = rest.strip()
     # rest = re.sub(r'\s+[A-Z]\.$', '', rest).strip()
 
-    return last.strip(), rest.strip()
+    return last.strip(), rest.strip(), middle_initial.strip()
 
 def load_year(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -58,7 +63,7 @@ def build_lookup(students):
     """
     lookup = {}
     for s in students:
-        last, first = parse_name(s['name'])
+        last, first, _ = parse_name(s['name'])
         key = (last.lower(), first.lower())
         # print(key)
         lookup[key] = s
@@ -115,7 +120,7 @@ for year_index, year_name in enumerate(year_order):
     year_id = year_name_to_id[year_name]
 
     for student in all_years[year_name]:
-        last, first = parse_name(student['name'])
+        last, first, middle_initial = parse_name(student['name'])
         grade_str = student.get('grade', '0')
         try:
             grade = int(grade_str)
@@ -146,6 +151,7 @@ for year_index, year_name in enumerate(year_order):
                 'student_id': sid,
                 'first_name': first,
                 'last_name': last,
+                'middle_initial': middle_initial,
                 'username': username,
             })
 
@@ -157,6 +163,11 @@ for year_index, year_name in enumerate(year_order):
                 for row in students_rows:
                     if row['id'] == student_uuid and not row['student_id']:
                         row['student_id'] = raw_student_id
+                        break
+            if middle_initial:
+                for row in students_rows:
+                    if row['id'] == student_uuid and not row['middle_initial']:
+                        row['middle_initial'] = middle_initial
                         break
         
         for period_str, class_info in student.get('periods', {}).items():
@@ -183,7 +194,7 @@ with open(f"{OUTPUT_DIR}/school_year.csv", 'w', newline='', encoding='utf-8') as
     writer.writerows(school_years_rows)
 
 with open(f"{OUTPUT_DIR}/students.csv", 'w', newline='', encoding='utf-8') as f:
-    writer = csv.DictWriter(f, fieldnames= ['id', 'student_id', 'first_name', 'last_name', 'username'])
+    writer = csv.DictWriter(f, fieldnames= ['id', 'student_id', 'first_name', 'middle_initial', 'last_name', 'username'])
     writer.writeheader()
     writer.writerows(students_rows)
 
