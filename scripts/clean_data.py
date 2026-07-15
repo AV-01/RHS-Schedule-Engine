@@ -21,17 +21,29 @@ def parse_name(raw_name):
     Strips middle initials, we'll deal with those later
     """
     raw_name = raw_name.strip()
-    # raw_name = re.sub(r'\s*-\+[A-Z].\s*$', '', raw_name).strip()
-    raw_name = re.sub(r'\s*-\.\s*$', '', raw_name).strip() #remove '-.'
-    raw_name = re.sub(r'\s*\.\s*$', '', raw_name).strip() #remove '.'
 
     if ',' not in raw_name:
         return raw_name, ""
     
     last, rest = raw_name.split(',', 1)
-    
+    last = last.strip()
     rest = rest.strip()
-    rest = re.sub(r'\s+[A-Z]\.$', '', rest).strip()
+
+    rest = re.sub(r'\s*-\.\s*$', '', rest).strip() # remove dash
+    rest = re.sub(r'\s+[A-Z]\.\s*$', '', rest).strip() # remove middle initial
+    rest = re.sub(r'\.\s*$', '', rest).strip() # remove lone dots
+
+    # # raw_name = re.sub(r'\s*-\+[A-Z].\s*$', '', raw_name).strip()
+    # raw_name = re.sub(r'\s*-\.\s*$', '', raw_name).strip() #remove '-.'
+    # raw_name = re.sub(r'\s*\.\s*$', '', raw_name).strip() #remove '.'
+
+    # if ',' not in raw_name:
+    #     return raw_name, ""
+    
+    # last, rest = raw_name.split(',', 1)
+    
+    # rest = rest.strip()
+    # rest = re.sub(r'\s+[A-Z]\.$', '', rest).strip()
 
     return last.strip(), rest.strip()
 
