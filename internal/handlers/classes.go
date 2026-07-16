@@ -56,6 +56,7 @@ func GetClasses(c *gin.Context) {
 		LIMIT $%d OFFSET $%d`,
 		where, argIdx, argIdx+1,
 	)
+	args = append(args, limit, offset)
 
 	rows, err := db.DB.Query(query, args...)
 	if err != nil {
