@@ -26,4 +26,9 @@ func Init() {
 	if err = DB.Ping(); err != nil {
 		log.Fatalf("failed ot ping db: %v", err)
 	}
+
+	DB.SetMaxOpenConns(25)
+	DB.SetMaxIdleConns(5)
+
+	log.Println("db connected")
 }
