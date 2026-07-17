@@ -64,6 +64,9 @@ func main() {
 
 		protected.GET("/classes", handlers.GetClasses)
 
+		protected.GET("/teachers", handlers.GetTeachers)
+		protected.GET("/teachers/:name/schedules", handlers.GetTeacherSchedule)
+
 	}
 
 	if err := router.Run(":8080"); err != nil {
