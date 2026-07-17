@@ -36,6 +36,6 @@ time.sleep(1)
 test_api(f"{BASE_URL}/classes")
 time.sleep(1)
 
-# fifth test
+# fifth test (EXPECTED TO FAIL DUE TO BAD HEADERS)
 test_api(f"{BASE_URL}/students", headers={})
 time.sleep(1)
