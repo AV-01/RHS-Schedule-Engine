@@ -17,6 +17,18 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// Login godoc
+//
+//	@Summary		Authenticate and get a JWT
+//	@Description	Login with username (firstname.lastname) and your student ID as the password. Returns a JWT valid for 24 hours. For public demo access, skip this endpoint and use the token "dmeo-key" directly in the Authorization header.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		LoginRequest	true	"Login credentials"
+//	@Success		200		{object}	map[string]string
+//	@Failure		400		{object}	map[string]string
+//	@Failure		401		{object}	map[string]string
+//	@Router			/api/v1/auth/login [post]
 func Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

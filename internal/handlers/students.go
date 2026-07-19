@@ -34,6 +34,21 @@ type PaginatedStudents struct {
 	Total int       `json: "total"`
 }
 
+// GetStudents godoc
+//
+//	@Summary		List all students
+//	@Description	Returns a paginated list of students. Search by name or filter by grade.
+//	@Tags			students
+//	@Produce		json
+//	@Param			page	query	int		false	"Page number (default: 1)"
+//	@Param			limit	query	int		false	"Results per page (default: 20, max: 100)"
+//	@Param			name	query	string	false	"Search by first or last name"
+//	@Param			grade	query	int		false	"Filter by grade (9, 10, 11, 12)"
+//	@Security		BearerAuth
+//	@Success		200	{object}	PaginatedStudents
+//	@Failure		401	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Router			/api/v1/students [get]
 func GetStudents(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
@@ -107,6 +122,17 @@ func GetStudents(c *gin.Context) {
 	})
 }
 
+// GetStudent godoc
+//
+//	@Summary		Get a student by UUID
+//	@Description	Returns a single student's details by their internal UUID. Does not expose student ID.
+//	@Tags			students
+//	@Produce		json
+//	@Param			id	path	string	true	"Student UUID"
+//	@Security		BearerAuth
+//	@Success		200	{subject}	Student
+//	@Failure		404	{object}	map[string]string
+//	@Router			/api/v1/students/{id} [get]
 func GetStudent(c *gin.Context) {
 	id := c.Param("id")
 
@@ -128,6 +154,18 @@ func GetStudent(c *gin.Context) {
 	c.JSON(http.StatusOK, s)
 }
 
+// GetStudentSchedules godoc
+//
+//	@Summary		Get a student's schedules
+//	@Description	Returns all schedule entries for a student across all years. Optionally filter by year.
+//	@Tags			students
+//	@Produce		json
+//	@Param			id		path	string	true	"Student UUID"
+//	@Param			year	query	string	false	"Filter by school year (e.g. 2023-2024)"
+//	@Security		BearerAuth
+//	@Success		200	{array}		ScheduleEntry
+//	@Failure		404	{object}	map[string]string
+//	@Router			/api/v1/students/{id}/schedules [get]
 func GetStudentSchedules(c *gin.Context) {
 	id := c.Param("id")
 	year := c.Query("year")

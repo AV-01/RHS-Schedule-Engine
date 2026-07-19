@@ -20,6 +20,19 @@ type PaginatedClasses struct {
 	Total int          `json:"total"`
 }
 
+// GetClasses godoc
+//
+//	@Summary		List all unique classes
+//	@Description	Returns a paginated list of all unique class names taught across all school years, with how many times each was offered.
+//	@Tags			classes
+//	@Produce		json
+//	@Param			page	query	int		false	"Page number (default: 1)"
+//	@Param			limit	query	int		false	"Results per page (default: 20, max: 100)"
+//	@Param			name	query	string	false	"Search class name"
+//	@Security		BearerAuth
+//	@Success		200	{object}	PaginatedClasses
+//	@Failure		401	{object}	map[string]string
+//	@Router			/api/v1/classes [get]
 func GetClasses(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))

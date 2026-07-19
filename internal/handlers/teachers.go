@@ -27,6 +27,19 @@ type PaginatedTeachers struct {
 	Total int       `json:"total"`
 }
 
+// GetTeachers godoc
+//
+//	@Summary		List all teachers
+//	@Description	Returns a paginated list of all unique teacher names across all school years.
+//	@Tags			teachers
+//	@Produce		json
+//	@Param			page	query	int		false	"Page number (default: 1)"
+//	@Param			limit	query	int		false	"Results per page (default: 20, limit: 100)"
+//	@Param			name	query	string	false	"Search teacher name"
+//	@Security		BearerAuth
+//	@Success		200	{object}	PaginatedTeachers
+//	@Failure		401	{object}	map[string]string
+//	@Router			/api/v1/teachers [get]
 func GetTeachers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
@@ -88,6 +101,17 @@ func GetTeachers(c *gin.Context) {
 	})
 }
 
+// GetTeacherSchedule godoc
+//
+//	@Summary		Get a teacher's schedule
+//	@Description	Returns all classes a teacher teaches, grouped by school year and period. Use the exact teacher_name value from GET /api/v1/teachers.
+//	@Tags			teachers
+//	@Produce		json
+//	@Param			name	path	string	true	"Teacher name (e.g. Stark, L)"
+//	@Security		BearerAuth
+//	@Success		200	{array}		TeacherScheduleEntry
+//	@Failure		404	{object}	map[string]string
+//	@Router			/api/v1/teachers/{name}/schedules [get]
 func GetTeacherSchedule(c *gin.Context) {
 	name := c.Param("name")
 

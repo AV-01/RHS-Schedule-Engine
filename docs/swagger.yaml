@@ -1,0 +1,350 @@
+definitions:
+  handlers.ClassEntry:
+    properties:
+      class_name:
+        type: string
+      count:
+        type: integer
+    type: object
+  handlers.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handlers.PaginatedClasses:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/handlers.ClassEntry'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  handlers.PaginatedStudents:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/handlers.Student'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  handlers.PaginatedTeachers:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/handlers.Teacher'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  handlers.ScheduleEntry:
+    properties:
+      className:
+        type: string
+      grade:
+        type: integer
+      period:
+        type: integer
+      roomNum:
+        type: string
+      schoolYear:
+        type: string
+      teacherName:
+        type: string
+    type: object
+  handlers.Student:
+    properties:
+      firstName:
+        type: string
+      id:
+        type: string
+      lastName:
+        type: string
+      middleInitial:
+        type: string
+      username:
+        type: string
+    type: object
+  handlers.Teacher:
+    properties:
+      teacher_name:
+        type: string
+    type: object
+  handlers.TeacherScheduleEntry:
+    properties:
+      class_name:
+        type: string
+      period:
+        type: integer
+      room_num:
+        type: string
+      school_year:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with username (firstname.lastname) and your student ID as
+        the password. Returns a JWT valid for 24 hours. For public demo access, skip
+        this endpoint and use the token "dmeo-key" directly in the Authorization header.
+      parameters:
+      - description: Login credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Authenticate and get a JWT
+      tags:
+      - auth
+  /api/v1/classes:
+    get:
+      description: Returns a paginated list of all unique class names taught across
+        all school years, with how many times each was offered.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Results per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Search class name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PaginatedClasses'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all unique classes
+      tags:
+      - classes
+  /api/v1/students:
+    get:
+      description: Returns a paginated list of students. Search by name or filter
+        by grade.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Results per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Search by first or last name
+        in: query
+        name: name
+        type: string
+      - description: Filter by grade (9, 10, 11, 12)
+        in: query
+        name: grade
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PaginatedStudents'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all students
+      tags:
+      - students
+  /api/v1/students/{id}:
+    get:
+      description: Returns a single student's details by their internal UUID. Does
+        not expose student ID.
+      parameters:
+      - description: Student UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: subject
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a student by UUID
+      tags:
+      - students
+  /api/v1/students/{id}/schedules:
+    get:
+      description: Returns all schedule entries for a student across all years. Optionally
+        filter by year.
+      parameters:
+      - description: Student UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Filter by school year (e.g. 2023-2024)
+        in: query
+        name: year
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.ScheduleEntry'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a student's schedules
+      tags:
+      - students
+  /api/v1/teachers:
+    get:
+      description: Returns a paginated list of all unique teacher names across all
+        school years.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Results per page (default: 20, limit: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Search teacher name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PaginatedTeachers'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all teachers
+      tags:
+      - teachers
+  /api/v1/teachers/{name}/schedules:
+    get:
+      description: Returns all classes a teacher teaches, grouped by school year and
+        period. Use the exact teacher_name value from GET /api/v1/teachers.
+      parameters:
+      - description: Teacher name (e.g. Stark, L)
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.TeacherScheduleEntry'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a teacher's schedule
+      tags:
+      - teachers
+swagger: "2.0"
