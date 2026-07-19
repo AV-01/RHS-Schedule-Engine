@@ -130,7 +130,7 @@ func GetStudents(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	path	string	true	"Student UUID"
 //	@Security		BearerAuth
-//	@Success		200	{subject}	Student
+//	@Success		200	{object}	Student
 //	@Failure		404	{object}	map[string]string
 //	@Router			/api/v1/students/{id} [get]
 func GetStudent(c *gin.Context) {

@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/api/v1/auth/login": {
             "post": {
-                "description": "Login with username (firstname.lastname) and your student ID as the password. Returns a JWT valid for 24 hours. For public demo access, skip this endpoint and use the token \"dmeo-key\" directly in the Authorization header.",
+                "description": "Login with username (firstname.lastname) and your student ID as the password. Returns a JWT valid for 24 hours. For public demo access, skip this endpoint and use the token \"demo-key\" directly in the Authorization header.",
                 "consumes": [
                     "application/json"
                 ],
@@ -221,7 +221,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "subject"
+                            "$ref": "#/definitions/handlers.Student"
                         }
                     },
                     "404": {

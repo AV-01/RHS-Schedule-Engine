@@ -50,6 +50,12 @@ func getClient(ip string) *rate.Limiter {
 	return limiter
 }
 
+func ResetClients() {
+	mu.Lock()
+	defer mu.Unlock()
+	clients = make(map[string]*client)
+}
+
 func RateLimiter() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip := c.ClientIP()

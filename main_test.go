@@ -79,6 +79,7 @@ func TestAuthMiddleware_ValidDemoToken(t *testing.T) {
 }
 
 func TestRateLimiter(t *testing.T) {
+	middleware.ResetClients()
 	router := setupRouter()
 
 	// Make 61 requests to trigger the rate limiter (limit is 60)

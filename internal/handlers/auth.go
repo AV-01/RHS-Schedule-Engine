@@ -20,7 +20,7 @@ type LoginRequest struct {
 // Login godoc
 //
 //	@Summary		Authenticate and get a JWT
-//	@Description	Login with username (firstname.lastname) and your student ID as the password. Returns a JWT valid for 24 hours. For public demo access, skip this endpoint and use the token "dmeo-key" directly in the Authorization header.
+//	@Description	Login with username (firstname.lastname) and your student ID as the password. Returns a JWT valid for 24 hours. For public demo access, skip this endpoint and use the token "demo-key" directly in the Authorization header.
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
