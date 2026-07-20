@@ -74,6 +74,11 @@ func AuditLogger() gin.HandlerFunc {
 			eventType = "RATE_LIMITED"
 		}
 
+		details := ""
+		if queryParams := c.Request.URL.RawQuery; queryParams != "" {
+			details = "query_params: " + queryParams
+		}
+
 		entry := logEntry{
 			eventType:  eventType,
 			username:   username,
@@ -81,7 +86,7 @@ func AuditLogger() gin.HandlerFunc {
 			path:       path,
 			method:     method,
 			statusCode: statusCode,
-			details:    "",
+			details:    details,
 			timestamp:  time.Now().UTC(),
 		}
 
