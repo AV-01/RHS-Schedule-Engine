@@ -49,6 +49,7 @@ func main() {
 	router := gin.Default()
 
 	router.Use(middleware.RateLimiter())
+	router.Use(middleware.AuditLogger())
 
 	public := router.Group("/api/v1")
 	{

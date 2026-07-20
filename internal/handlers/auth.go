@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -41,6 +42,7 @@ func Login(c *gin.Context) {
 		req.Username, req.Password).Scan(&userID, &username)
 
 	if err == sql.ErrNoRows {
+		middleware.WriteLoginAudit("LOGIN_FAILED", req.Username, c.ClientIP(), fmt.Sprintf("invalid username(%s) or password(%s)", req.Username, req.Password))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 		return
 	}
@@ -62,6 +64,8 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to gen token"})
 		return
 	}
+
+	middleware.WriteLoginAudit("LOGIN_SUCCESS", username, c.ClientIP(), "")
 
 	c.JSON(http.StatusOK, gin.H{
 		"token":   signed,
