@@ -101,6 +101,9 @@ definitions:
     type: object
 info:
   contact: {}
+  description: API for accessing RHS Schedule Data
+  title: RHS Schedule Engine API
+  version: "1.0"
 paths:
   /api/v1/auth/login:
     post:
@@ -347,4 +350,10 @@ paths:
       summary: Get a teacher's schedule
       tags:
       - teachers
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and a JWT token
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

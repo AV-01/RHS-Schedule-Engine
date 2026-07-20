@@ -7,7 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
+	_ "github.com/AV-01/RHS-Schedule-Engine/docs"
 	"github.com/AV-01/RHS-Schedule-Engine/internal/db"
 	"github.com/AV-01/RHS-Schedule-Engine/internal/handlers"
 	"github.com/AV-01/RHS-Schedule-Engine/internal/middleware"
@@ -38,6 +41,13 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// @title						RHS Schedule Engine API
+// @version					1.0
+// @description				API for accessing RHS Schedule Data
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Type "Bearer" followed by a space and a JWT token
 func main() {
 
 	if err := godotenv.Load(); err != nil {
@@ -50,6 +60,8 @@ func main() {
 
 	router.Use(middleware.RateLimiter())
 	router.Use(middleware.AuditLogger())
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	public := router.Group("/api/v1")
 	{

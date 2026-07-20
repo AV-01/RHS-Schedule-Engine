@@ -28,21 +28,6 @@ type PaginatedAuditLogs struct {
 	Total int        `json:"total"`
 }
 
-// GetAuditLogs godoc
-//
-//	@Summary		List audit log entries
-//	@Description	Returns a paginated list of all audit log events. Filterable by username and event_type. Requires authentication.
-//	@Tags			audit
-//	@Produce		json
-//	@Param			page		query	int		false	"Page number (default: 1)"
-//	@Param			limit		query	int		false	"Results per page (default: 20, max: 100)"
-//	@Param			username	query	string	false	"Filter by username"
-//	@Param			event_type	query	string	false	"Filter by event type (e.g. LOGIN_FAILED, API_ACCESS)"
-//	@Security		BearerAuth
-//	@Success		200	{object}	PaginatedAuditLogs
-//	@Failure		401	{object}	map[string]string
-//	@Failure		500	{object}	map[string]string
-//	@Router			/api/v1/audit-logs [get]
 func GetAuditLogs(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
