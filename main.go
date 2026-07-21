@@ -16,6 +16,10 @@ import (
 	"github.com/AV-01/RHS-Schedule-Engine/internal/middleware"
 )
 
+func init() {
+	gin.SetMode(gin.ReleaseMode)
+}
+
 func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -56,7 +60,10 @@ func main() {
 
 	db.Init()
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+	router.SetTrustedProxies(nil)
 
 	router.Use(middleware.RateLimiter())
 	router.Use(middleware.AuditLogger())
