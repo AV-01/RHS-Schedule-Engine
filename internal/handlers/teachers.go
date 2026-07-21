@@ -63,11 +63,6 @@ func GetTeachers(c *gin.Context) {
 		argIdx++
 	}
 
-	var total int
-	countArgs := make([]interface{}, len(args))
-	copy(countArgs, args)
-	db.DB.QueryRow("SELECT COUNT(DISTINCT teacher_name) FROM schedules "+where, countArgs...).Scan(&total)
-
 	query := fmt.Sprintf(`
 		SELECT DISTINCT teacher_name
 		FROM schedules %s
@@ -97,7 +92,7 @@ func GetTeachers(c *gin.Context) {
 		Data:  teachers,
 		Page:  page,
 		Limit: limit,
-		Total: total,
+		Total: len(teachers),
 	})
 }
 

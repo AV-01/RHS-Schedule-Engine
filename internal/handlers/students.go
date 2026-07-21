@@ -87,14 +87,6 @@ func GetStudents(c *gin.Context) {
 
 	fromClause := "FROM students s LEFT JOIN schedules sc ON s.id = sc.student_uuid " + where
 
-	var total int
-	countArgs := make([]interface{}, len(args))
-	copy(countArgs, args)
-	if err := db.DB.QueryRow("SELECT COUNT(DISTINCT s.id) "+fromClause, countArgs...).Scan(&total); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
-		return
-	}
-
 	selectQuery := fmt.Sprintf(`SELECT DISTINCT s.id::text, s.first_name, COALESCE(s.middle_initial, ''), s.last_name, s.username %s ORDER BY s.last_name, s.first_name LIMIT $%d OFFSET $%d`, fromClause, argIdx, argIdx+1)
 	args = append(args, limit, offset)
 
@@ -118,7 +110,7 @@ func GetStudents(c *gin.Context) {
 		Data:  students,
 		Page:  page,
 		Limit: limit,
-		Total: total,
+		Total: len(students),
 	})
 }
 

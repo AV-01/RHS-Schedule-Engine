@@ -56,11 +56,6 @@ func GetClasses(c *gin.Context) {
 		argIdx++
 	}
 
-	var total int
-	countArgs := make([]interface{}, len(args))
-	copy(countArgs, args)
-	db.DB.QueryRow("SELECT COUNT(DISTINCT class_name) FROM schedules"+where, countArgs...).Scan(&total)
-
 	query := fmt.Sprintf(
 		`SELECT class_name, COUNT(*) as times_offered
 		FROM schedules %s
@@ -72,6 +67,7 @@ func GetClasses(c *gin.Context) {
 	args = append(args, limit, offset)
 
 	rows, err := db.DB.Query(query, args...)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
@@ -91,6 +87,6 @@ func GetClasses(c *gin.Context) {
 		Data:  classes,
 		Page:  page,
 		Limit: limit,
-		Total: total,
+		Total: len(classes),
 	})
 }
