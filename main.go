@@ -46,7 +46,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 // @title						RHS Schedule Engine API
-// @version					1.0
+// @version					1.1
 // @description				API for accessing RHS Schedule Data
 // @securityDefinitions.apikey	BearerAuth
 // @in							header
