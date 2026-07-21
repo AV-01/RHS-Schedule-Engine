@@ -1,0 +1,72 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+
+      - name: Regenerate Swagger docs
+        run: swag init
+
+      - name: Commit updated docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || git commit -m "chore: regenerate swagger docs [skip ci]"
+          git push
+
+      - name: Extract version from main.go
+        id: version
+        run: |
+          VERSION=$(grep '@version' main.go | awk '{print $3}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deploying version $VERSION"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/rhs-api:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/rhs-api:${{ steps.version.outputs.version }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/rhs-api:latest
+            docker stop rhs-api || true
+            docker rm rhs-api || true
+            docker run -d \
+              --name rhs-api \
+              --restart unless-stopped \
+              -p 80:8080 \
+              -e SUPABASE_DB_URL="${{ secrets.SUPABASE_DB_URL }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/rhs-api:latest
