@@ -111,7 +111,7 @@ func GetTeacherSchedule(c *gin.Context) {
 	name := c.Param("name")
 
 	rows, err := db.DB.Query(
-		`SELECT sy.name, sc.period, sc.class_name, sc.room_num
+		`SELECT DISTINCT sy.name, sc.period, sc.class_name, sc.room_num
 		FROM schedules sc
 		JOIN school_years sy on sc.school_year_id = sy.id
 		WHERE sc.teacher_name = $1
