@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/AV-01/RHS-Schedule-Engine/internal/db"
+	"github.com/AV-01/RHS-Schedule-Engine/internal/handlers"
 	"github.com/AV-01/RHS-Schedule-Engine/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -110,5 +112,116 @@ func TestDatabaseConnection(t *testing.T) {
 	err := db.DB.Ping()
 	if err != nil {
 		t.Errorf("Database ping failed: %v", err)
+	}
+}
+
+func setupAppRouter() *gin.Engine {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+
+	protected := r.Group("/api/v1")
+	protected.Use(middleware.AuthRequired())
+	{
+		protected.GET("/students", handlers.GetStudents)
+		protected.GET("/students/:id", handlers.GetStudent)
+		protected.GET("/students/:id/schedules", handlers.GetStudentSchedules)
+		protected.GET("/classes", handlers.GetClasses)
+		protected.GET("/teachers", handlers.GetTeachers)
+		protected.GET("/teachers/:name/schedules", handlers.GetTeacherSchedule)
+	}
+	return r
+}
+
+func TestDemoStudentsEndpoint(t *testing.T) {
+	router := setupAppRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/api/v1/students?name=alex", nil)
+	req.Header.Set("Authorization", "Bearer demo-key")
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	body := w.Body.String()
+	if !strings.Contains(body, "Alex") || !strings.Contains(body, "demo-student-001-uuid") {
+		t.Errorf("Expected body to contain mock student Alex, got: %s", body)
+	}
+}
+
+func TestDemoStudentDetailsAndSchedules(t *testing.T) {
+	router := setupAppRouter()
+
+	// GET Student Details
+	w1 := httptest.NewRecorder()
+	req1, _ := http.NewRequest(http.MethodGet, "/api/v1/students/demo-student-001-uuid", nil)
+	req1.Header.Set("Authorization", "Bearer demo-key")
+	router.ServeHTTP(w1, req1)
+
+	if w1.Code != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d", w1.Code)
+	}
+	if !strings.Contains(w1.Body.String(), "alex.morgan") {
+		t.Errorf("Expected student username alex.morgan, got: %s", w1.Body.String())
+	}
+
+	// GET Student Schedules
+	w2 := httptest.NewRecorder()
+	req2, _ := http.NewRequest(http.MethodGet, "/api/v1/students/demo-student-001-uuid/schedules", nil)
+	req2.Header.Set("Authorization", "Bearer demo-key")
+	router.ServeHTTP(w2, req2)
+
+	if w2.Code != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d", w2.Code)
+	}
+	if !strings.Contains(w2.Body.String(), "AP Computer Science A") {
+		t.Errorf("Expected AP Computer Science A in schedule, got: %s", w2.Body.String())
+	}
+}
+
+func TestDemoClassesEndpoint(t *testing.T) {
+	router := setupAppRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/api/v1/classes", nil)
+	req.Header.Set("Authorization", "Bearer demo-key")
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d", w.Code)
+	}
+	if !strings.Contains(w.Body.String(), "Algebra II") {
+		t.Errorf("Expected class Algebra II in response, got: %s", w.Body.String())
+	}
+}
+
+func TestDemoTeachersEndpoint(t *testing.T) {
+	router := setupAppRouter()
+
+	// GET Teachers List
+	w1 := httptest.NewRecorder()
+	req1, _ := http.NewRequest(http.MethodGet, "/api/v1/teachers", nil)
+	req1.Header.Set("Authorization", "Bearer demo-key")
+	router.ServeHTTP(w1, req1)
+
+	if w1.Code != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d", w1.Code)
+	}
+	if !strings.Contains(w1.Body.String(), "Stark, T") {
+		t.Errorf("Expected teacher Stark, T in list, got: %s", w1.Body.String())
+	}
+
+	// GET Teacher Schedule
+	w2 := httptest.NewRecorder()
+	req2, _ := http.NewRequest(http.MethodGet, "/api/v1/teachers/Stark,%20T/schedules", nil)
+	req2.Header.Set("Authorization", "Bearer demo-key")
+	router.ServeHTTP(w2, req2)
+
+	if w2.Code != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d", w2.Code)
+	}
+	if !strings.Contains(w2.Body.String(), "AP Computer Science A") {
+		t.Errorf("Expected teacher class in schedule, got: %s", w2.Body.String())
 	}
 }

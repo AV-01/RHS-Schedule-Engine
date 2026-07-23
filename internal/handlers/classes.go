@@ -44,6 +44,11 @@ func GetClasses(c *gin.Context) {
 	if limit < 1 || limit > 100 {
 		limit = 20
 	}
+
+	if c.GetBool("is_demo") {
+		c.JSON(http.StatusOK, GetDemoClasses(name, page, limit))
+		return
+	}
 	offset := (page - 1) * limit
 
 	args := []interface{}{}

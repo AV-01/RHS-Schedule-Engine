@@ -63,6 +63,11 @@ func GetStudents(c *gin.Context) {
 		limit = 20
 	}
 
+	if c.GetBool("is_demo") {
+		c.JSON(http.StatusOK, GetDemoStudents(name, grade, page, limit))
+		return
+	}
+
 	offset := (page - 1) * limit
 
 	args := []interface{}{}
@@ -128,6 +133,16 @@ func GetStudents(c *gin.Context) {
 func GetStudent(c *gin.Context) {
 	id := c.Param("id")
 
+	if c.GetBool("is_demo") {
+		st, ok := GetDemoStudent(id)
+		if !ok {
+			c.JSON(http.StatusNotFound, gin.H{"error": "student not found"})
+			return
+		}
+		c.JSON(http.StatusOK, st)
+		return
+	}
+
 	var s Student
 	err := db.DB.QueryRow(
 		`SELECT id::text, first_name, COALESCE(middle_initial, ''), last_name, username
@@ -162,6 +177,15 @@ func GetStudentSchedules(c *gin.Context) {
 	id := c.Param("id")
 	year := c.Query("year")
 
+	if c.GetBool("is_demo") {
+		scheds := GetDemoStudentSchedules(id, year)
+		if len(scheds) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "no schedules found for this studnet"})
+			return
+		}
+		c.JSON(http.StatusOK, scheds)
+		return
+	}
 	query := `
 		SELECT sy.name, sc.grade, sc.period, sc.class_name, sc.teacher_name, sc.room_num
 		FROM schedules sc

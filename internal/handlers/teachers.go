@@ -51,6 +51,11 @@ func GetTeachers(c *gin.Context) {
 	if limit < 1 || limit > 100 {
 		limit = 20
 	}
+
+	if c.GetBool("is_demo") {
+		c.JSON(http.StatusOK, GetDemoTeachers(name, page, limit))
+		return
+	}
 	offset := (page - 1) * limit
 
 	args := []interface{}{}
@@ -109,6 +114,16 @@ func GetTeachers(c *gin.Context) {
 //	@Router			/api/v1/teachers/{name}/schedules [get]
 func GetTeacherSchedule(c *gin.Context) {
 	name := c.Param("name")
+
+	if c.GetBool("is_demo") {
+		scheds := GetDemoTeacherSchedule(name)
+		if len(scheds) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "no sched found, use GET /api/v1/teachers for valid names"})
+			return
+		}
+		c.JSON(http.StatusOK, scheds)
+		return
+	}
 
 	rows, err := db.DB.Query(
 		`SELECT DISTINCT sy.name, sc.period, sc.class_name, sc.room_num
